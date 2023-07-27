@@ -1,0 +1,269 @@
+import React from 'react';
+import * as Yup from 'yup';
+import styled from 'styled-components/macro';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+//import Select from 'react-select';
+//import AsyncSelect from 'react-select/async';
+import { toast } from 'react-toastify';
+import { useMutation } from '@apollo/client';
+import { ADD_TABLET, UPDATE_TABLET } from '@/graphql/tablet/mutations';
+import DashBoardLayout from '@/components/layouts/Dashboard';
+import EditCard from './edit-card';
+import { Divider } from '@/components/shared/styled/tablet.styled';
+//import Input from '@/components/forms/Input'
+import {
+  Button as MuiButton,
+  Card as MuiCard,
+  CardContent,
+  /* FormControl as MuiFormControl, */
+  Grid,
+  TextField as MuiTextField,
+  Typography,
+} from '@mui/material';
+
+import { spacing, SpacingProps } from '@mui/system';
+import { CloudUpload as MuiCloudUpload } from '@mui/icons-material';
+//import { Divider } from '@/components/shared/styled/product.styled';
+
+const Card = styled(MuiCard)(spacing);
+//const FormControl = styled(MuiFormControl)<{ my?: number }>(spacing);
+/* const GridTitleProduct = styled(Grid)`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+`; */
+const CloudUpload = styled(MuiCloudUpload)(spacing);
+
+const CenteredContent = styled.div`
+  text-align: center;
+`;
+
+/* const BigAvatar = styled(Avatar)`
+  width: 120px;
+  height: 120px;
+  margin: 0 auto ${(props) => props.theme.spacing(2)}px;
+`;
+ */
+const TextField = styled(MuiTextField)<{ my?: number }>(spacing);
+
+interface ButtonPropstype extends SpacingProps {
+  component?: string;
+}
+
+const Button = styled(MuiButton)<ButtonPropstype>(spacing);
+export enum tabletStatus {
+  DB = 'DB',
+  MI = 'MI',
+  PR = 'PR',
+  FI = 'FI',
+}
+const tabletValidationSchema = Yup.object().shape({
+  title: Yup.string().required('title is required'),
+  tags: Yup.array().of(Yup.string()),
+  souras: Yup.array().of(Yup.string()),
+  words: Yup.array().of(Yup.string()),
+  image: Yup.string(),
+  cards: Yup.array().of(Yup.string()),
+  tabletStatus: Yup.array().of(Yup.string()),
+  /*  status: Yup.mixed<tabletStatus>().oneOf(Object.values(tabletStatus)), */
+  description: Yup.string(),
+  level: Yup.number(),
+});
+
+export default function EditTablet() {
+  const [AddTablet] = useMutation(ADD_TABLET);
+  const [UpdateTablet] = useMutation(UPDATE_TABLET);
+  const {
+    register,
+    handleSubmit,
+    /* control, */
+    getValues,
+    formState,
+  } = useForm({
+    resolver: yupResolver(tabletValidationSchema),
+    mode: 'onTouched',
+  });
+  const { errors } = formState;
+
+  const saveTablet = async (data: any /* event: MouseEvent */) => {
+    console.log({ data });
+    try {
+      const newProd = AddTablet(data);
+      if (newProd) {
+        toast.success(`Product ${JSON.stringify(newProd)} is registred !`);
+        console.log({ newProd });
+        //event.target.resert();
+      }
+    } catch (error: unknown) {
+      console.log({ error });
+    }
+  };
+  const updateTablet = (data: any) => {
+    try {
+      const newTablet = UpdateTablet(data);
+      if (newTablet) {
+        toast.success(`Product ${JSON.stringify(newTablet)} is registred !`);
+        console.log({ newTablet });
+        //event.target.resert();
+      }
+    } catch (error: unknown) {
+      console.log({ error });
+    }
+  };
+  return (
+    <DashBoardLayout>
+      <form onSubmit={handleSubmit(saveTablet)}>
+        <Card mb={6}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Create / Update Tablet
+            </Typography>
+            <Grid direction="row" container spacing={2} style={{ alignItems: 'flex-start' }}>
+              <Grid item md={6}>
+                <TextField
+                  {...(register('title'), { required: true, maxLength: 20 })}
+                  id="title"
+                  label="Title"
+                  defaultValue={getValues()?.title}
+                  variant="outlined"
+                  fullWidth
+                />
+              </Grid>
+              {errors?.title && (
+                <Grid item md={6}>
+                  {errors?.title.message}{' '}
+                </Grid>
+              )}
+
+              <Grid item md={6}>
+                <TextField
+                  {...(register('description'), { required: true, maxLength: 100 })}
+                  label="Description"
+                  id="description"
+                  multiline={true}
+                  rows={3}
+                  fullWidth
+                  variant="outlined"
+                />
+              </Grid>
+              {errors?.description && (
+                <Grid item md={6}>
+                  {errors?.description.message}{' '}
+                </Grid>
+              )}
+            </Grid>
+            <Grid container spacing={2}>
+              <Grid item md={3}>
+                <TextField
+                  {...(register('tags'), { required: true })}
+                  id="tags"
+                  label="Tags"
+                  variant="outlined"
+                  fullWidth
+                  my={2}
+                />
+              </Grid>
+              {errors?.price && (
+                <Grid item md={6}>
+                  {errors?.tags.message}{' '}
+                </Grid>
+              )}
+
+              <Grid item md={3}>
+                <TextField
+                  type="status"
+                  {...(register('status'), { required: true })}
+                  id="status"
+                  label="Status"
+                  variant="outlined"
+                  fullWidth
+                  my={2}
+                />
+              </Grid>
+              {errors?.stock && (
+                <Grid item md={6}>
+                  {errors?.souras.message}{' '}
+                </Grid>
+              )}
+              <Grid item md={3}>
+                <TextField
+                  {...(register('words'), { required: true })}
+                  id="words"
+                  label="Words"
+                  variant="outlined"
+                  fullWidth
+                  my={2}
+                />
+              </Grid>
+              {errors?.words && (
+                <Grid item md={6}>
+                  {errors?.words.message}{' '}
+                </Grid>
+              )}
+            </Grid>
+            <Grid container spacing={2}>
+              <Grid item md={3}>
+                <TextField
+                  {...(register('cards'), { required: true })}
+                  id="cards"
+                  label="Cards"
+                  variant="outlined"
+                  fullWidth
+                  my={2}
+                />
+              </Grid>
+              {errors?.cards && (
+                <Grid item md={6}>
+                  {errors?.cards.message}{' '}
+                </Grid>
+              )}
+
+              <Grid item md={3}>
+                <TextField
+                  type="number"
+                  {...(register('level'), { required: true })}
+                  id="level"
+                  label="Level"
+                  variant="outlined"
+                  fullWidth
+                  my={2}
+                />
+              </Grid>
+              {errors?.tags && (
+                <Grid item md={6}>
+                  {errors?.tags.message}{' '}
+                </Grid>
+              )}
+
+              <Grid item md={3}>
+                <CenteredContent>
+                  <label htmlFor="tabletImage">
+                    <Button variant="contained" color="secondary" component="span">
+                      <input type="file" style={{ display: 'none' }} accept="image/*" {...register('tabletImage')} />
+                      <CloudUpload mr={2} /> tablet image
+                    </Button>
+                  </label>
+                </CenteredContent>
+              </Grid>
+            </Grid>
+            <Grid container spacing={2}>
+              <Grid style={{ textAlign: 'center' }} item md={4}>
+                <Button my={4} type="submit" variant="contained" color="primary" mt={3}>
+                  Save tablet
+                </Button>
+              </Grid>
+              <Grid style={{ textAlign: 'center' }} item md={4}>
+                <Button my={4} type="button" onClick={updateTablet} variant="contained" color="secondary" mt={3}>
+                  Update Tablet
+                </Button>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      </form>
+      <Divider />
+      <EditCard />
+    </DashBoardLayout>
+  );
+}

@@ -1,0 +1,301 @@
+import React, { useRef } from 'react';
+import * as Yup from 'yup';
+import styled from 'styled-components/macro';
+import { useForm } from 'react-hook-form';
+//import Select from 'react-select';
+//import AsyncSelect from 'react-select/async';
+import { yupResolver } from '@hookform/resolvers/yup';
+//import AsyncSelect from 'react-select/async'
+//import Input from '@/components/forms/Input'
+import {
+  Button as MuiButton,
+  Card as MuiCard,
+  CardContent,
+  //  FormControl as MuiFormControl,
+  Grid,
+  TextField as MuiTextField,
+  Typography,
+} from '@mui/material';
+
+import { spacing, SpacingProps } from '@mui/system';
+
+import { CloudUpload as MuiCloudUpload } from '@mui/icons-material';
+import { Divider } from '@/components/shared/styled/product.styled';
+
+const Card = styled(MuiCard)(spacing);
+/* const FormControl = styled(MuiFormControl)<{ my?: number }>(spacing);
+const GridTitleProduct = styled(Grid)`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+`;
+ */
+const CloudUpload = styled(MuiCloudUpload)(spacing);
+
+const CenteredContent = styled.div`
+  text-align: center;
+`;
+
+/* const BigAvatar = styled(Avatar)`
+  width: 120px;
+  height: 120px;
+  margin: 0 auto ${(props) => props.theme.spacing(2)}px;
+`;
+ */
+const TextField = styled(MuiTextField)<{ my?: number }>(spacing);
+
+interface ButtonPropstype extends SpacingProps {
+  component?: string;
+}
+
+const Button = styled(MuiButton)<ButtonPropstype>(spacing);
+
+const productValidationSchema = Yup.object().shape({
+  title: Yup.string().required('Required'),
+  description: Yup.string().required('Required'),
+  selection: Yup.string().required('Required'),
+  category: Yup.string().required('Required'),
+  price: Yup.number().required('Required'),
+  stock: Yup.string().required('Required'),
+});
+const initialValues = {
+  title: '',
+  description: '',
+  selection: '',
+  price: 10,
+  stock: 100,
+  titleSelection: '',
+  descSelection: '',
+};
+
+export default function EditProduct() {
+  // const [selectionValue, setselectionValue] = useState();
+  const productImageRef = useRef<HTMLInputElement>(null);
+  const selectionImageRef = useRef<HTMLInputElement>(null);
+  const { register, handleSubmit, watch } = useForm({
+    resolver: yupResolver(productValidationSchema),
+  });
+  //const watchSelection = watch('selection', '');
+  /* const promiseCategoryOptions = async () => {
+    return new Promise((resolve) => {
+      resolve(
+        setTimeout(() => {
+          return [
+            { value: 'playful', label: 'Playful' },
+            { value: 'book', label: 'Book' },
+            { value: 'discovering', label: 'Discovering' },
+          ];
+        }, 1000)
+      );
+    });
+  };
+
+   const promiseSelectionOptions = async (selectionValue) => {
+    return new Promise((resolve) => {
+      console.log({ watchSelection });
+      setTimeout(() => {
+        resolve([
+          { category: 'playful', value: 'box1', label: 'Box1' },
+          { category: 'playful', value: 'ras1', label: 'Ras1' },
+          { category: 'playful', value: 'tableau', label: 'Tableau1' },
+          { category: 'playful', value: 'caricature', label: 'Caricature' },
+          { category: 'playful', value: 'Velo', label: 'Velo1' },
+          { category: 'book', value: 'Bookbox1', label: 'BookBox1' },
+          { category: 'book', value: 'Bookras1', label: 'BookRas1' },
+          { category: 'book', value: 'Booktableau', label: 'BookTableau1' },
+          { category: 'book', value: 'Bookcaricature', label: 'BookCaricature' },
+          { category: 'book', value: 'BookVelo', label: 'BookVelo1' },
+          { category: 'discovery', value: 'discoverybox1', label: 'discoveryBox1' },
+          { category: 'discovery', value: 'discoveryras1', label: 'discoveryRas1' },
+          { category: 'discovery', value: 'discoverytableau', label: 'discoveryTableau1' },
+          { category: 'discovery', value: 'discoverycaricature', label: 'discoveryCaricature' },
+          { category: 'discovery', value: 'discoveryVelo', label: 'discoveryVelo1' },
+        ]);
+      }, 1000);
+    });
+  };
+   */ console.log(
+    watch('title')
+  );
+  const submitted = async (data: any) => {
+    try {
+      console.log({ data });
+    } catch (error: unknown) {
+      console.log({ error });
+    }
+  };
+  const updateProduct = (data: any) => {
+    console.log({ data });
+  };
+  const updateSelection = (data: any) => {
+    console.log({ data });
+  }; /* 
+  const saveProduct = (data) => {
+    console.log({ data });
+  }; */
+  const saveSelection = (data: any) => {
+    console.log({ data });
+  };
+  return (
+    <form onSubmit={handleSubmit(submitted)}>
+      <Card mb={6}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Create product / selection
+          </Typography>
+          <Grid direction="row" container spacing={2} style={{ alignItems: 'flex-start' }}>
+            <Grid item md={6}>
+              <TextField
+                {...register('title')}
+                id="title"
+                label="Title"
+                defaultValue={initialValues.title}
+                variant="outlined"
+                fullWidth
+              />
+            </Grid>
+            <Grid item md={6}>
+              <TextField
+                {...register('description')}
+                label="Description"
+                id="description"
+                multiline={true}
+                rows={3}
+                
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+          </Grid>
+          <Grid container spacing={2} style={{ alignItems: 'center' }}>
+            <Grid item md={3}>
+              <TextField
+                {...register('price')}
+                id="price"
+                label="Price"
+                defaultValue="10"
+                variant="outlined"
+                fullWidth
+                my={2}
+              />
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                {...register('stock')}
+                id="stock"
+                label="Stock"
+                defaultValue="100"
+                variant="outlined"
+                fullWidth
+                my={2}
+              />
+            </Grid>
+            <Grid item md={3}>
+              <CenteredContent>
+                <label htmlFor="productImage">
+                  <Button variant="contained" color="primary" component="div">
+                    <input
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      id="raised-button-file"
+                      type="file"
+                      ref={productImageRef}
+                    />
+                    <CloudUpload mr={2} /> U pload product image
+                  </Button>
+                </label>
+              </CenteredContent>
+              {/* <Controller
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <AsyncSelect {...field} cacheOptions defaultOptions loadOptions={promiseCategoryOptions} isMulti />
+                  )}
+                  name="category"
+                  control={control}
+                />*/}
+            </Grid>
+            <Grid item md={3}>
+              {/* <Controller
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <AsyncSelect {...field} cacheOptions defaultOptions loadOptions={promiseSelectionOptions} isMulti />
+                  )}
+                  name="selection"
+                  control={control}
+                /> */}
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={2}>
+            <Grid style={{ textAlign: 'center' }} item md={6}>
+              <Button my={4} type="submit" variant="contained" color="primary" mt={3}>
+                Save Product
+              </Button>
+            </Grid>
+            <Grid style={{ textAlign: 'center' }} item md={6}>
+              <Button my={4} type="button" onClick={updateProduct} variant="contained" color="secondary" mt={3}>
+                Update Product
+              </Button>
+            </Grid>
+          </Grid>
+          <Divider  />
+          <Typography variant="h6" gutterBottom>
+            Create Update selection
+          </Typography>
+          <Grid container spacing={2} style={{ alignItems: 'center' }}>
+            <Grid item md={3}>
+              <TextField
+                {...register('titleSelection')}
+                id="titleSelection"
+                label="Title Selection"
+                defaultValue={initialValues.title}
+                variant="outlined"
+                fullWidth
+              />
+            </Grid>
+            <Grid item md={6}>
+              <TextField
+                {...register('descSelection')}
+                id="descSelection"
+                label="Selection Description"
+                multiline={true}
+                rows={3}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item md={3}>
+              <CenteredContent>
+                <input accept="image/*" style={{ display: 'none' }} id="raised-button-file" multiple type="file" />
+                <label htmlFor="raised-button-file">
+                  <Button variant="contained" color="primary" component="div">
+                    <input
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      id="raised-button-file"
+                      type="file"
+                      ref={selectionImageRef}
+                    />
+                    <CloudUpload mr={2} /> Upload selection image
+                  </Button>
+                </label>
+              </CenteredContent>
+            </Grid>
+          </Grid>
+          <Grid container spacing={2}>
+            <Grid item md={6} style={{ textAlign: 'center' }}>
+              <Button my={4} onClick={saveSelection} type="button" variant="contained" color="primary" mt={3}>
+                Save selection
+              </Button>
+            </Grid>
+            <Grid item md={6} style={{ textAlign: 'center' }}>
+              <Button my={4} type="button" onClick={updateSelection} variant="contained" color="secondary" mt={3}>
+                Update Selection
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
+}

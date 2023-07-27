@@ -1,0 +1,154 @@
+import React from 'react';
+import * as Yup from 'yup';
+import styled from 'styled-components';
+
+import { useForm, Controller } from 'react-hook-form';
+import Link from '@/components/shared/Link';
+import DashboardLayout from '@/layouts/Dashboard';
+import {
+  Button,
+  Paper,
+  TextField as MuiTextField,
+  Typography,
+  CardContent,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Radio,
+  RadioGroup,
+} from '@mui/material';
+import { spacing } from '@mui/system';
+import { Alert as MuiAlert } from '@mui/lab';
+import { toast } from 'react-toastify';
+import { useMutation } from '@apollo/client';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { ADD_VIEWER } from '@/graphql/domain/mutations';
+const Alert = styled(MuiAlert)(spacing);
+
+const TextField = styled(MuiTextField)<{ my?: number }>(spacing);
+
+const RolesFlex = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+`;
+
+const Wrapper = styled(Paper)`
+  padding: ${(props) => props.theme.spacing(6)}px;
+
+  ${(props) => props.theme.breakpoints.up('md')} {
+    padding: ${(props) => props.theme.spacing(10)}px;
+  }
+`;
+const validationSchema = Yup.object().shape({
+  username: Yup.string().max(255).required('username is required'),
+  organistation: Yup.string().max(255),
+  email: Yup.string().email('Must be a valid email').max(30).required('Email is required'),
+  password: Yup.string().min(5, 'Must be at least 5 characters').max(8).required('Required'),
+  role: Yup.mixed().oneOf(['user', 'fam', 'org', 'admin']),
+  confirmPassword: Yup.string().when('password', {
+    is: (val: any) => (val && val.length > 0 ? true : false),
+    then: Yup.string().oneOf([Yup.ref('password')], 'Both password need to be the same'),
+  }),
+});
+const AddViewer: React.FunctionComponent = () => {
+  //const router = useRouter();
+  const [AddViewer] = useMutation(ADD_VIEWER);
+
+  const { register, handleSubmit, formState, getValues, control } = useForm({
+    resolver: yupResolver(validationSchema),
+    mode: 'onBlur',
+  });
+
+  const { errors, isSubmitting } = formState;
+  console.log({ errors, isSubmitting });
+  async function onSubmit(data: any) {
+    console.log({ data });
+
+    try {
+      const { login, level } = getValues();
+
+      await AddViewer({
+        variables: {
+          input: {
+            login,
+            level,
+          },
+        },
+      });
+      toast.success('Viewer added to Daomain');
+      //console.log({profileResolved})
+    } catch (error: any) {
+      const message = error?.message || 'Something went wrong';
+      console.log({ error, message });
+    }
+  }
+
+  return (
+    <DashboardLayout>
+      <Wrapper>
+        <Typography component="h1" variant="h4" align="center" gutterBottom>
+          complete registrartion for Viewers
+        </Typography>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {errors.submit && (
+            <Alert mt={2} mb={1} severity="warning">
+              {errors.submit}
+            </Alert>
+          )}
+          <TextField
+            {...register('email')}
+            type="email"
+            value={getValues('email')}
+            //error={Boolean(touched.email && errors.email)}
+            fullWidth
+            my={3}
+          />
+          <TextField
+            {...register('login')}
+            type="text"
+            label="Login"
+            value={getValues('login')}
+            error={Boolean(errors['login'])}
+            fullWidth
+            helperText={errors['login']}
+            my={3}
+          />
+
+          <CardContent>
+            <Paper elevation={3}>
+              <FormControl component="fieldset">
+                <FormLabel component="legend">Level</FormLabel>
+                <Controller
+                  control={control}
+                  name="level"
+                  render={({ field: { onChange, value, ref } }) => (
+                    <RadioGroup aria-label="level" ref={ref} value={value} onChange={(e) => onChange(e.target.checked)}>
+                      <RolesFlex>
+                        <FormControlLabel value="pri" control={<Radio />} label="User" />
+                        <FormControlLabel value="sec" control={<Radio />} label="Org" />
+                        <FormControlLabel value="ter" control={<Radio />} label="Fam" />
+                        {/*       <FormControlLabel value="fin" disabled control={<Radio />} label="(Fin)" />
+                         */}{' '}
+                      </RolesFlex>
+                    </RadioGroup>
+                  )}
+                />
+              </FormControl>
+            </Paper>
+          </CardContent>
+          <div>Level: {getValues('level')}</div>
+
+          <Button type="submit" fullWidth variant="contained" color="primary" disabled={isSubmitting}>
+            Sign up
+          </Button>
+          <Link href="/auth/Register">
+            <Typography>If Error GO Register again</Typography>
+          </Link>
+        </form>
+      </Wrapper>
+    </DashboardLayout>
+  );
+};
+
+export default React.memo(AddViewer);
