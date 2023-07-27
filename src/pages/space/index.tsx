@@ -1,16 +1,13 @@
 
 import React, { useEffect, useState } from 'react'
 import SpaceLayout from '@/components/Layout/SpaceLayout'
-import fs from 'fs'
-import { parse } from 'csv-parse';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { withPageAuthRequired } from '@auth0/nextjs-auth0'
-export default function Space({ soura }) {
+import TabletGridModel from '@/api/tablet/TabletGrid.model'
+export default function Space({ tabletGrids }) {
   const [souraAffichable, setSoura] = useState('')
-  console.log({ soura })
-  return (<main id="spacePage" className='flex justify-center  w-[70%] m-auto
-  items-center mt-20 bg-slate-600 h-screen ' >
+  console.log({ tabletGrids })
+  return (
+  <main id="spacePage" className='flex justify-center  
+  w-[70%] mt-32  h-screen ' >
     <div className="flex flex-col">
       <h2 className='text-gray-200  '> qq </h2>
     </div>
@@ -36,14 +33,15 @@ export default function Space({ soura }) {
 Space.getLayout = function getLayout(page, pageProps) {
   return (<SpaceLayout {...pageProps} title=' liismaiil space dashboard '> {page}</SpaceLayout>)
 }
-
+/* 
 export const getServerSideProps = async (context) => {
   console.log({ context })
   try {
-
-    return {
+   const tabletGrids =  await TabletGridModel.find({}).lean().exec();
+    
+   return {
       props: {
-
+          tabletGrids
       },
       revalidate: 600
     }
@@ -51,11 +49,11 @@ export const getServerSideProps = async (context) => {
   catch (error) {
     return {
       props: {
-
-      },
-      error,
+        tabletGrids:null
+    },
+           error,
       revalidate: 600
     }
   }
 
-})
+} */

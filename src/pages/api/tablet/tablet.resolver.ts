@@ -1,8 +1,11 @@
 
 import mongoose from 'mongoose';
 import { CardTypeData } from '../card/card.types';
-import { TabletTypeData, TabletInput, ValidateTabletInput, StatTypeData, TabletGridsTypeData, } from './tablet.types';
-import { ISoura } from '@/api/coran/coran.types'
+import { TabletTypeData, TabletInput, ValidateTabletInput, 
+  TabletTemplateTypeData, TabletTemplateInput, TabletGridsInput, 
+  TabletGridsTypeData, AddTabletOutput, } from './tablet.types';
+import { Firestore } from 'firebase-admin/firestore';
+
 export const tablets = async (
   _: undefined,
   __: undefined,
@@ -44,12 +47,41 @@ export const tablets = async (
  */
 export const getTabletsBySoura = async (
   _: undefined,
-  soura: string,
-  { TabletModel }: { TabletModel: unknown }
-): Promise<TabletTypeData | undefined> => {
+  soura: number,
+  { TabletGridModel }: { TabletGridModel: unknown }
+): Promise<TabletGridsTypeData[] | undefined> => {
   try {
-    const tablet = await TabletModel.findOne({ soura: soura }).lean().exec();
-    return tablet;
+    const tabletGrids = await TabletGridModel.findOne({ souraNb: soura }).lean().exec();
+    return tabletGrids;
+  } catch (error) {
+
+    throw error;
+  }
+};
+export const getTabletTemplates = async (
+  _: undefined,
+  __: undefined,
+  { TabletTemplateModel }: { TabletTemplateModel: any }
+): Promise<TabletTemplateTypeData[] | undefined> => {
+  try {
+    const tabletTemplates = await TabletTemplateModel.find().lean().exec();
+    console.log({tabletTemplates})
+    return tabletTemplates;
+  } catch (error) {
+
+    throw error;
+  }
+};
+export const getTemplateBySoura = async (
+  _: undefined,
+  { soura }: { soura: string },
+  { TabletTemplateModel }: { TabletTemplateModel: unknown }
+): Promise<TabletTemplateTypeData[] | undefined> => {
+  console.log({ soura })
+  try {
+    const template = await TabletTemplateModel.find({ souraName: `${soura}` }).lean().exec();
+    console.log({ template })
+    return [...template];
   } catch (error) {
 
     throw error;
@@ -72,7 +104,13 @@ export const getStats = async (
   _: undefined,
   id: string,
   { TabletModel }: { TabletModel: unknown }
-): Promise<StatTypeData | undefined> => {
+): Promise< {
+  guests: number,
+  time: number,
+  suggestions: [string],
+  coll: [string],
+  soura: string
+}| undefined> => {
   try {
     const tablet = await TabletModel.findOne({ id }).lean().exec();
     if (tablet) {
@@ -91,22 +129,141 @@ export const getStats = async (
     throw error;
   }
 };
-// MUTATIONS
-export const addTablet = async (
+// ADD TO FIRESTORE AUTHOR
+const addGridOnFireStore =  async (
   _: undefined,
-  { input }: { input: TabletGridsTypeData },
-  { TabletModel }: { TabletModel: unknown }
-): Promise<TabletGridsTypeData | undefined> => {
-  const { title, description, arabName, souraName, souraNb, wordsComment, ayahsGrids, grid, createdAt } = input;
+  { uid,grid_title }: {uid:string,grid_title:string  },
+  { dbFirestore }: {  dbFirestore:Firestore }
+): Promise<boolean | undefined> => {
   try {
-    const tablet = new TabletModel({ title, description, arabName, souraName, souraNb, wordsComment, ayahsGrids, grid, createdAt });
-    const tableted = await tablet.save();
-    return tableted;
+    const dbProfiles = dbFirestore.collection('profiles');
+           const profileRef = await dbProfiles.doc(`${uid}`);
+      const profileSnapshot = await profileRef.get()
+ 
+          if (profileSnapshot?.exists) {
+            await profileRef.collection('grids').doc(grid_title)
+            return  true
+          } else {
+            return  false
+          }
+        }
+        catch (error: unknown) {
+            throw error;
+      };
+    
+}
+// MUTATIONS
+export const addTabletGrids = async (
+  _: undefined,
+  { input }: { input: TabletGridsInput },
+  { TabletGridsModel, dbFirestore }: { TabletGridsModel: any, dbFirestore:Firestore }
+): Promise<AddTabletOutput | undefined> => {
+  const { title, description, arabName, souraName, souraNb, tabletWords=[],
+    uid,ayahs, grid, group } = input;
+  console.log({ input })
+  try {
+    const oldGrid = await TabletGridsModel.find({ author:uid }).lean().exec()
+
+    if (oldGrid.length === 1 && oldGrid[0]['title'] === title) {
+      oldGrid.description=description
+      oldGrid.ayahs = ayahs
+      oldGrid.tableWords = [...oldGrid.tableWords,tabletWords]
+      oldGrid.grid = grid
+      oldGrid.group = group 
+      oldGrid.ayahs = ayahs
+      await oldGrid.save()
+     const res = await addGridOnFireStore(_,{uid,grid_title:title}, {dbFirestore})
+     if(res) {
+      return {success:true, message:`Same Title found,${title} we update the tablet`}
+    }else {
+      return {success:false, message:`Same Title found updated on database , can not add reference to profile `}
+    }
+    } else {
+      const tabletGrids = new TabletGridsModel({ author:uid, title, description, 
+        arabName, souraName, souraNb, tabletWords, ayahs, grid,group });
+        await tabletGrids.save();
+     const res = await addGridOnFireStore(_,{uid,grid_title:title}, {dbFirestore})
+        if(res) {
+          return {success:true, message:`${title} added to tablet and profile`}
+        }else {
+          return {success:false, message:`${title} added to tablet database, 
+          but can not add a reference to the profile`}
+        }
+      }
   } catch (error: unknown) {
     throw error
   }
 };
+export const addTablet = async (
+  _: undefined,
+  { input }: { input: AddTabletInput },
+  { TabletGridsModel }: { TabletGridsModel: any }
+): Promise<TabletGridsTypeData | undefined> => {
+  const { title, description, arabName, souraName, souraNb, wordsComment, ayahsGrids, grid, createdAt } = input;
+  console.log({ input })
+  try {
+    const oldGrid = await TabletGridsModel.find({ title }).lean().exec()
 
+    if (oldGrid.length === 1 && oldGrid[0]['title'] === title) {
+      return oldGrid as TabletGridsTypeData
+    } else {
+      const tabletGrids = new TabletGridsModel({ title, description, arabName, souraName, souraNb, wordsComment, ayahsGrids, grid, createdAt });
+      const tabletGridsSaved = await tabletGrids.save();
+
+      return tabletGridsSaved;
+    }
+  } catch (error: unknown) {
+    throw error
+  }
+};
+const registerOnFireStore =  async (
+  _: undefined,
+  { input }: { input: TabletTemplateInput },
+  { dbFirestore }: {  dbFirestore: Firestore }
+): Promise<{success: boolean, message:string} | undefined> => {
+  const { souraNb, souraName, description, arabName, ayahs, uid } = input;
+  console.log({ souraNb, souraName, description, arabName, ayahs })
+  try {
+    const dbProfiles = dbFirestore.collection('profiles');
+           const profileRef = await dbProfiles.doc(`${uid}`);
+      const profileSnapshot = await profileRef.get()
+ 
+          if (profileSnapshot?.exists) {
+            await profileRef.collection('templates').doc(`${souraNb}-${souraName}`).set({ 
+              souraNb, souraName, description, arabName, ayahs });
+            return {
+              success: true,
+              message: 'OK'
+            }
+          } else {
+            return {
+              success: true,
+              message: 'NO profile found'
+            }
+          }
+        }
+        catch (error: unknown) {
+          
+          throw error;
+
+        };
+    
+}
+export const addTabletTemplate = async (
+  _: undefined,
+  { input }: { input: TabletTemplateInput },
+  { TabletTemplateModel, dbFirestore }: { TabletTemplateModel:any, dbFirestore: Firestore }
+): Promise<AddTabletOutput | undefined> => {
+  const { souraNb, souraName, description, arabName, ayahs, uid } = input;
+  console.log({ souraNb, souraName, description, arabName, ayahs })
+  try {
+    const tablet = new TabletTemplateModel({ author: uid, souraNb, souraName, description, arabName, ayahs });
+    await tablet.save();
+   return await registerOnFireStore(_,{input},{dbFirestore})
+}catch (error: unknown) {
+  throw error
+}
+};
 
 
 export const updateTablet = async (_: undefined, input: TabletInput, { TabletModel }: { TabletModel: unknown })
@@ -158,6 +315,21 @@ const removeTablet = async (
   }
 };
 
+const removeAllTemplate = async (
+  _: undefined,
+  __: undefined,
+  { TabletTemplateModel }: { TabletTemplateModel: unknown }
+): Promise<{ success: boolean }> => {
+  try {
+    console.log('removeAllTemplate')
+    await TabletTemplateModel.deleteMany({})
+
+    return { success: true };
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
 type SectionSourasType =
   {
     section: string;
@@ -195,14 +367,19 @@ module.exports = {
   Query: {
     tablets,
     getTabletsBySoura,
+    getTemplateBySoura,
+    getTabletTemplates,
     getTabletsByWord,
     getStats,
   },
   Mutation: {
     addTablet,
+    addTabletGrids,
+    addTabletTemplate,
     updateTablet,
     validateTablet,
     removeTablet,
+    removeAllTemplate,
     createSourasSections
   },
 };

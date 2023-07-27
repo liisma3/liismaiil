@@ -3,7 +3,7 @@ import React, { ReactElement, useEffect, useRef, useState } from 'react'
 import { ViewerTypeData } from '@/api/viewer/viewer.types'
 import { GuestTypeData } from '@/api/guest/guest.types'
 import { FLAG_FILES } from '@/store/constants/flagArray'
-export default function Guests({ guests }: { guests: GuestTypeData[] }): ReactElement {
+export default function Guests({ guests }: { guests: GuestTypeData[] }){
     const [guest, setGuest] = useState('')
     useEffect(() => {
         console.log(guest)

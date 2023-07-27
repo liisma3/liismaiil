@@ -8,7 +8,7 @@ import { useRouter } from 'next/router'
 
 export default function Organisations({ organisations,
     countries,
-    cities }: { organisations: ViewerTypeData[], countries: string[], cities: string[] }): ReactElement {
+    cities }: { organisations: ViewerTypeData[], countries: string[], cities: string[] }) {
     const router = useRouter()
     const [organisationsFront, setOrganisationsFront] = useState(organisations)
     const [country, setCountry] = useState(countries[0])
