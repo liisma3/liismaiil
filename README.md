@@ -1,1 +1,1 @@
-# Next.js TailwindCSS Typescript Starter
+# Next.js TailwindCSS Typescript liismaiil dashboard app 
