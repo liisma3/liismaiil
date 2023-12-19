@@ -1,39 +1,38 @@
 import { BookingTypeData } from '@/api/booking/booking.types'
 export type MessageTypeData = {
   date: string;
-  profileId: string;
+  collaboratorId: string;
   product: string;
   subject: string;
   content: string;
-  emailCollaborator: string;
+  collaboratorEmail: string;
 }
-/** sender: String
-  feed:String
-  messages: [MessageType]
-} */
 export type FeedTypeData = {
   sender: string;
-  product: string;
-  messages: [MessageTypeData
+
+  messages: [{
+    date:string,
+    rec:string,
+    content:string}
   ]
 }
 
 export type GuestTypeData = {
   _id?: string;
   token: string;
-  flagAvatar: string,
+  flag: string,
   organisation: string
-  instagram: string;
+  
   messages: [MessageTypeData];
   events: [EventType];
   conversationFeed: [FeedTypeData]
   cha3bi?: number;
   tablets: [string]
   cards: [string]
-  tabletsValid: [string]
   cardsValid: [string]
-  walletId?: string;
-  productsPromoted?: string[];
+  tabletsValid: [string]
+ 
+  
   bookings?: [BookingTypeData];
   addressGeo: string;
   continent?: string;
@@ -76,11 +75,10 @@ export type EventType = {
   contact: string;
 }
 export type FollowerTypeData = {
-  [n: string]: {
-    walletId: string;
-    continent: string;
-  }
-}
+  token:string,
+  cha3bi:string,
+  continent:string,
+   }
 export type GuestByTokenInput = {
   token: string
   email: string

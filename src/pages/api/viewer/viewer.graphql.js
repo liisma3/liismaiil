@@ -3,16 +3,15 @@ export const viewerDefs = `
 scalar DateTime
 type Viewer {
   _id: ID!
+    bio: String,
   login: String
+  uid: String
   loginSlug: String
   email: String
   password: String
   stripe_account_id:String
-  stripe_seller:String
-  stripe_link:String
   hasWallet:Boolean
   phone:String
-  bio: String
   avatar:AvatarType
   flagAvatar: String
   cardBack:Int
@@ -23,29 +22,28 @@ type Viewer {
   instagram: String
   telegram: String
   orders:[OrderType]
-  messages:[MessageType]
   events:[EventType]
-  conversationFeed:[ConversationFeedType]
- cha3bi:Int
- productsPromoted:[String]
- discountProducts:[DiscountProductType]
+  cha3bi:Int
+  discountProducts:[DiscountProductType]
   bookings:[BookingType]
-  selections:[String]
-  products:[Product]
   sales:Int
-  collaboratorpass:[StudType]
-  organisatorpass:[StudType]
-
-  guestpass:[GuestType]
   guestProfiles:[ConnexionProfileType]
   discountProfiles:[ConnexionProfileType]
+  liismaiilProfiles:[ConnexionProfileType]
   liismanagerProfiles:[ConnexionProfileType]
   collaboratorProfiles:[ConnexionProfileType]
   organisatorProfiles:[ConnexionProfileType]
+  libraryProfiles:[ConnexionProfileType]
+  deliverProfiles:[ConnexionProfileType]
+  guests:[String]
   coords:CoordsType
+  contact:String
   addressGeo:String
-  continent:String
+  city:String
+  country:String
+  state:String
   rewards: [String]
+  token: String
   updatedAt: DateTime
   createdAt: DateTime
 }
@@ -53,27 +51,15 @@ type Viewer {
   email: String
   date: String
  }
-type ConversationFeedType {
-  sender: String
-  feed:String
-  messages: [MessageType]
-}
-  type GuestType {
-    pass: String
-    flag: String
-    cha3bi:Int
-    cards: [String]
-    tablets :[String]
-  }
+
 type EventType {
-  title: String
-  content: String
-    allDay: Boolean
-    start: String
-    end: String
+    id:String
+    title: String
+    content: String
+    startDate: String
+    endDate: String
     status: String
     contact: String
-  
 }
 
 type DiscountProductType {
@@ -91,19 +77,17 @@ type StudType {
   pass:String
   }
 
-type DeliveryType {
-  startDate: String
-  endDate:String
-  }
 type ConnexionProfileType {
     title: String
+    description: String
     token: String
+    status:String
     profileEmail: String
     profileId: String
     flag: String
     price:Int
     startDate:String
-    status:String
+    endDate:String
    }
 
 type CoordsType {
@@ -115,24 +99,14 @@ input CoordsTypeInput {
   long:Float
 }
 type OrderType {
-      products: [ProductOrderType]
-      quantity: Int
-      profile: String
+      cart: String
       total:Int
-      delivery:DeliveryType
-}
-type ProductOrderType {
-        title:String
-        price:Int
-        promo:Int
-        quantity:Int
 }
 
 type BookingType  {
   bookingStartDate: String
   bookingEndDate: String
 }
-
 
 type Address {
     name: String
@@ -150,20 +124,14 @@ type Address {
 input AddViewerInput {
   login:String
   email:String
-  phone:String
-
+  phone:String  
   status:String
   uid:String
-    name: String
-    destination: String
-    building: String
-    street: String
-    city: String
-    state: String
-    country: String
-    zip:String
-    contact: String
-    isdefault:Boolean
+  city: String
+  state: String
+  country: String
+  contact: String
+   
 }
 
 type ViewerOutput {
@@ -171,17 +139,18 @@ type ViewerOutput {
   login:String
   email:String
   phone:String
-status: String
- address:Address
- isAdmin:Boolean
- 
+  status:String
+  uid:String
+  city: String
+  state: String
+  country: String
+  contact: String
 } 
 
 type UpdateViewerStatusOutput {
-  
-status:String,
-success: Boolean
- }   
+  status:String,
+  success: Boolean
+}   
 input UpdateViewerInput {
   email:String  
   login:String
@@ -189,25 +158,27 @@ input UpdateViewerInput {
   instagram:String
   website:String
   phone:String
-  status:String
+  role:[String]
   organisation: String
   avatar:AvatarTypeInput
-
 }
+
 input UpdateViewerStatusInput {
   email:String  
   status:String
- 
 }
+
 input AvatarTypeInput {
   public_id: String!
   url: String!
 }
+
 input UpdateViewerAddressInput {
     email:String
     coords:CoordsTypeInput
     addressGeo:String
- }
+}
+
 input ConnectPayoutInput {
     email: String
     id: String
@@ -222,38 +193,8 @@ input SendMessageViewerInput {
     product:String
     rec:String
     content: String
-  }
- 
-  input AddConversationFeedInput {
-    email:String
-    sender: String
-    product:String
-    rec:String
-    content: String
-    date:String  
-  }
-  input DeleteConversationFeedInput {
-    sender: String
-    email: String
-    product:String
-    rec: String
-    }
-
- 
-type EnrollmentType {
-  title:String
-  description:String
-  price:Int
-  image : AvatarType
-  max : Int
-  promo : Int
-  enrollmentStatus:[String]
-  startDate:String
-  endDate:String
- } 
-type EnrollmentOutput {
-  success: [EnrollmentType]
 }
+
 type SuccessBoolean {
   success: Boolean
 }
@@ -272,39 +213,37 @@ input PassFlagInput {
   id: String
   email: String
 }
+
 input EnrollmentInput {
-  id: String
   title: String
   description:String
+  profileId: String
+  profileEmail: String
+  token: String
+  flag: String
+  status:String
   price:Int
-  image:AvatarTypeInput
-  enrollmentStatus: [String]
-  max: Int
+  collaboratorEmail: String
+  collaboratorId: String
   startDate:String
   endDate:String
 }
-input PayAffiliateInput {
-  title: String
-  token: String
-  affiliate: String
-  emailCollaborator:String
-  profileId: String
-  flag: String
-  price: Int
-  startDate: String
-  status: String
-}
-type AddAffiliateOutput {
+
+type AccountStatusOutput {
   success:Boolean
-  token: String
-  affiliate: String
-  emailCollaborator:String
-  profileId: String
-  flag: String
-  price: Int
-  startDate: String
   status: String
 }
+
+type GetConnexionProfileOutput {
+  success: Boolean
+  message:[ConnexionProfileType]
+}
+
+type ValidateProfileStatusOutput {
+  success: Boolean
+  message:String
+}
+
 input UpdateEnrollmentInput {
   id: String
   title: String
@@ -318,23 +257,34 @@ input UpdateEnrollmentInput {
 }
 
 input RemoveEnrollmentInput {
-  id: String
-  title: [String]
+  collaboratorEmail: String
+  profileId: String
+  token: String
+  status:String
 }
+
 input EventTypeInput {
-   id: String
+    id: String
     title: String
     content: String
-    start: String
-    end: String
+    startDate: String
+    endDate: String
     status: String
     contact: String
 }
 input RegisterEventInput {
-   email: String
-  events: [EventTypeInput]
+   collaboratorEmail: String
+   collaboratorId: String
+  event: EventTypeInput
   }
 
+input RemoveEventInput {
+  collaboratorEmail: String
+  collaboratorId: String
+  id:String
+  status:String
+ }
+  
 input GetDiscountInput {
   affiliator: String
   discountToken: String
@@ -343,50 +293,68 @@ input CardBackInput {
   id:String
   card:Int
 }
+input AccountStatusInput {
+  accountId:String
+  email:String
+}
 input AffiliateRequestInput {
   email:String
   id:String
 }
 
-input AddAffiliateInput {
-      emailCollaborator:String
-      title:String
-      emailProfile:String
-      profileId:String
-      status:String
+input SyncInput {
+  email:String
+  id:String
 }
-type MessageType {
-    date:String  
-    profileId: String
-    product:String
-    subject: String!
-    content: String
-    emailCollaborator:String
- }
- input SendMessageInput {
-    profileId: String
-    product:String
-    emailCollaborator:String
-    subject: String
-    content: String
-  }
-  type SendMessageOutput {
-    success: Boolean
-    }
-  
+type OkSuccess {
+  success: Boolean
+  message:String
+}
+type EnrollmentOutput {
+  success: Boolean
+  message:String
+}
+type EventOutput {
+  success: Boolean
+  message:String
+}
+
 type Mutation {
-    sendMessageViewer(input:SendMessageInput):SendMessageOutput
-    addConversationFeed(input:AddConversationFeedInput):Viewer
-    deleteConversationFeed(input:DeleteConversationFeedInput):Viewer
+    addViewer(input:AddViewerInput):ViewerOutput
+    removeViewer(email:String):Boolean
+    updateViewer(input:UpdateViewerInput):Viewer
+    updateViewerStatus(input:UpdateViewerStatusInput):UpdateViewerStatusOutput
+    setFlagAvatar(input:SetFlagAvatarInput):Viewer
+    validateProfileStatus(id:String): ValidateProfileStatusOutput
+    updateViewerAddress(input:UpdateViewerAddressInput):Viewer
     removeToken(token: String): Boolean 
-   registerEvent(input:RegisterEventInput): Viewer
+    connectPayout(input:ConnectPayoutInput): ConnectPayoutOutput   
+    stripeAccountStatus(input: AccountStatusInput): AccountStatusOutput
+    payEnrollment(input: EnrollmentInput): EnrollmentOutput
+    updateEnrollment(input:EnrollmentInput): EnrollmentOutput
+    removeEnrollment(input:RemoveEnrollmentInput): EnrollmentOutput
+    registerEvent(input:RegisterEventInput): EventOutput
+    removeEvent(input:RemoveEventInput): EventOutput
+    notifySite(email:String):SuccessBoolean
+    registerEmailListing(email:String):SuccessBoolean
   }
- 
-  
+
   type Query {
     viewer(email:String): Viewer
     viewerById(id:String): Viewer
     viewers: [Viewer!]
+    frontCollaborators: [Viewer!]
+    getEvents(id:String):EventOutput 
+    enrollmentsByEmail(email:String): [EnrollmentOutput]
+    getGuestProfiles(email:String): GetConnexionProfileOutput
+    getLibraryProfiles(email:String): GetConnexionProfileOutput
+    getDiscountProfiles(email:String):GetConnexionProfileOutput
+    getLiismaiilProfiles(email:String):GetConnexionProfileOutput
+    getLiismanagerProfiles(email:String):GetConnexionProfileOutput
+    getCollaboratorProfiles(email:String):GetConnexionProfileOutput
+    getOrganisatorProfiles(email:String):GetConnexionProfileOutput
+    getDeliverProfiles(email:String):GetConnexionProfileOutput
+    getDiscountProducts(input:GetDiscountInput) :[Product]
     getQrCode(url:String): qrCodeOutput
    }
  

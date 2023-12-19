@@ -5,7 +5,7 @@ const nextConfig = {
   reactStrictMode: true,
   env: {
     LOCAL_URL: "http://localhost:3003/",
-    DEV_PORT: 3003,
+    DEV_PORT: "3003",
     LOCAL_API_URL: "http://localhost:3003/api",
     HTTPS_API_URL: "https://liismaiil.org/api",
     HTTPS_URL: "https://liismaiil.org/",
